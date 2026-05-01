@@ -1,0 +1,5 @@
+train: D:/dataset/train
+val: D:/dataset/val
+
+nc: 2
+names: ["normal", "violence"]

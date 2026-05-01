@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.gcsj4.mapper.FrameDetailMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.gcsj4.model.entity.FrameDetail">
+        <id column="id" property="id" />
+        <result column="video_id" property="videoId" />
+        <result column="frame_save_path" property="frameSavePath" />
+        <result column="video_second" property="videoSecond" />
+        <result column="is_violence" property="isViolence" />
+        <result column="detect_labels" property="detectLabels" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+            `id`,
+            `video_id`,
+            `frame_save_path`,
+            `video_second`,
+            `is_violence`,
+            `detect_labels`,
+            `create_time`
+    </sql>
+
+</mapper>

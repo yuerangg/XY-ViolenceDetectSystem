@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.5</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.violence</groupId>
+	<artifactId>video-detector</artifactId>
+	<version>1.0</version>
+
+	<properties>
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<!-- SpringBoot 3 Web -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- Jakarta 注解（Java17 + SpringBoot3 专用，替代 javax） -->
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
+
+		<!-- MySQL + MyBatis-Plus for Spring Boot 3 -->
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+			<version>3.5.9</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- JavaCV 视频抽帧（Java17 兼容版）-->
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>javacv-platform</artifactId>
+			<version>1.5.10</version>
+		</dependency>
+
+		<!-- DJL YOLO 模型推理 Java17 专用 -->
+		<dependency>
+			<groupId>ai.djl</groupId>
+			<artifactId>api</artifactId>
+			<version>0.27.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ai.djl.onnxruntime</groupId>
+			<artifactId>onnxruntime-engine</artifactId>
+			<version>0.27.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ai.djl.pytorch</groupId>
+			<artifactId>pytorch-engine</artifactId>
+			<version>0.27.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ai.djl.pytorch</groupId>
+			<artifactId>pytorch-jni</artifactId>
+			<version>1.13.1-0.27.0</version>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Hutool 工具 -->
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.8.29</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
