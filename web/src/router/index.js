@@ -4,6 +4,7 @@ import Register from '../views/Register.vue'
 import Upload from '../views/Upload.vue'
 import Result from '../views/Result.vue'
 import List from '../views/List.vue'
+import Profile from '../views/Profile.vue'
 
 const routes = [
     { path: '/', redirect: '/login' },
@@ -11,7 +12,8 @@ const routes = [
     { path: '/register', component: Register },
     { path: '/upload', component: Upload },
     { path: '/result/:videoId', component: Result },
-    { path: '/list/:userId', component: List }
+    { path: '/list/:userId', component: List },
+    { path: '/profile/:userId', component: Profile }
 ]
 
 const router = createRouter({
