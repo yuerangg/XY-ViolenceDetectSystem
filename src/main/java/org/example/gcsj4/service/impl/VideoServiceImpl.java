@@ -24,7 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -140,10 +142,63 @@ public class VideoServiceImpl extends ServiceImpl<InfoMapper, Info> implements V
         if (video == null) {
             return Result.fail("视频不存在");
         }
+
         LambdaQueryWrapper<AuditReport> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditReport::getVideoId, videoId);
         AuditReport report = reportMapper.selectOne(wrapper);
-        return Result.success(report);
+
+        // 构建返回数据，包含视频信息和报告信息
+        Map<String, Object> resultData = new HashMap<>();
+        if (report != null) {
+            resultData.put("id", report.getId());
+            resultData.put("videoId", report.getVideoId());
+            resultData.put("totalFrameNum", report.getTotalFrameNum());
+            resultData.put("violenceFrameNum", report.getViolenceFrameNum());
+            resultData.put("violenceRatio", report.getViolenceRatio());
+            resultData.put("conclusion", report.getConclusion());
+            resultData.put("createTime", report.getCreateTime());
+        }
+
+        // 添加视频文件信息 - 从完整路径中提取UUID文件名
+        String videoFileName = extractFileName(video.getVideoSavePath());
+        resultData.put("videoFileName", videoFileName);
+        resultData.put("videoName", video.getVideoName());
+        resultData.put("videoStatus", video.getStatus());
+        resultData.put("videoSavePath", video.getVideoSavePath());
+
+        System.out.println("=== 视频结果数据 ===");
+        System.out.println("视频ID: " + videoId);
+        System.out.println("视频保存路径: " + video.getVideoSavePath());
+        System.out.println("提取的文件名: " + videoFileName);
+        System.out.println("==================");
+
+        return Result.success(resultData);
+    }
+
+    /**
+     * 从完整路径中提取文件名
+     * 例如: D:/video_upload/abc123.mp4 -> abc123.mp4
+     */
+    private String extractFileName(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            System.err.println("警告: 视频路径为空");
+            return null;
+        }
+
+        // 处理 Windows 和 Linux 路径分隔符
+        int lastSeparatorIndex = Math.max(
+                filePath.lastIndexOf('/'),
+                filePath.lastIndexOf('\\')
+        );
+
+        if (lastSeparatorIndex >= 0 && lastSeparatorIndex < filePath.length() - 1) {
+            String fileName = filePath.substring(lastSeparatorIndex + 1);
+            System.out.println("从路径提取文件名: " + fileName);
+            return fileName;
+        }
+
+        System.err.println("警告: 无法从路径中提取文件名: " + filePath);
+        return filePath; // 如果没有分隔符，返回原字符串
     }
 
     @Override

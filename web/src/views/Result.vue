@@ -19,6 +19,63 @@
       </template>
 
       <div v-if="!loading && result" class="result-content">
+        <!-- 视频播放区域 -->
+        <div class="video-section" v-if="videoUrl">
+          <h3 class="section-title">
+            <el-icon><VideoPlay /></el-icon>
+            视频回放
+          </h3>
+          <div class="video-wrapper">
+            <video
+                ref="videoPlayerRef"
+                :src="videoUrl"
+                controls
+                preload="metadata"
+                class="video-player"
+                crossorigin="anonymous"
+                @error="handleVideoError"
+                @loadeddata="handleVideoLoaded"
+                @canplay="handleVideoCanPlay"
+            >
+              您的浏览器不支持视频播放
+            </video>
+
+            <!-- 视频加载状态提示 -->
+            <div v-if="videoLoading" class="video-loading">
+              <el-icon class="is-loading" :size="48"><Loading /></el-icon>
+              <p>视频加载中，首次播放可能需要转码...</p>
+            </div>
+
+            <!-- 视频错误提示 -->
+            <div v-if="videoError" class="video-error">
+              <el-icon :size="48"><CircleClose /></el-icon>
+              <p>{{ videoErrorMessage }}</p>
+              <el-button type="primary" size="small" @click="retryLoadVideo">
+                重试
+              </el-button>
+            </div>
+          </div>
+          <div class="video-info" v-if="result.videoName">
+            <el-tag type="info" size="small">
+              <el-icon><Document /></el-icon>
+              {{ result.videoName }}
+            </el-tag>
+            <el-tag type="success" size="small" v-if="videoLoaded">
+              <el-icon><Check /></el-icon>
+              视频加载成功
+            </el-tag>
+          </div>
+        </div>
+
+    <!-- 没有视频时的提示 -->
+    <div v-else class="no-video-tip">
+      <el-empty description="暂无视频数据">
+        <el-button type="primary" @click="uploadNew">上传视频</el-button>
+      </el-empty>
+    </div>
+
+        <el-divider />
+
         <!-- 结论区域 -->
         <div class="conclusion-section">
           <el-alert
@@ -36,7 +93,7 @@
         <!-- 统计数据 -->
         <el-row :gutter="24" class="stats-row">
           <el-col :xs="24" :sm="8">
-            <el-statistic title="总帧数" :value="result.totalFrameNum || 0">
+            <el-statistic title="总帧数" :value="Number(result.totalFrameNum) || 0">
               <template #prefix>
                 <el-icon color="#409eff"><Film /></el-icon>
               </template>
@@ -44,7 +101,7 @@
           </el-col>
 
           <el-col :xs="24" :sm="8">
-            <el-statistic title="暴力帧数" :value="result.violenceFrameNum || 0">
+            <el-statistic title="暴力帧数" :value="Number(result.violenceFrameNum) || 0">
               <template #prefix>
                 <el-icon :color="getViolenceColor()">
                   <Warning />
@@ -56,7 +113,7 @@
           <el-col :xs="24" :sm="8">
             <el-statistic
                 title="违规占比"
-                :value="(result.violenceRatio * 100).toFixed(2)"
+                :value="parseFloat((Number(result.violenceRatio) * 100).toFixed(2))"
                 suffix="%"
             >
               <template #prefix>
@@ -151,7 +208,12 @@ import {
   PieChart,
   InfoFilled,
   Back,
-  Plus
+  Plus,
+  VideoPlay,
+  Document,
+  Loading,
+  CircleClose,
+  Check
 } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
@@ -160,8 +222,16 @@ const route = useRoute()
 const router = useRouter()
 const videoId = route.params.videoId
 const result = ref({})
+const videoUrl = ref('')
+const videoPlayerRef = ref(null)
 const loading = ref(true)
 const userId = ref('')
+
+// 视频状态
+const videoLoading = ref(false)
+const videoError = ref(false)
+const videoLoaded = ref(false)
+const videoErrorMessage = ref('')
 
 const safetyRating = computed(() => {
   if (!result.value.violenceRatio) return 5
@@ -183,11 +253,96 @@ const loadResult = async () => {
   loading.value = true
   try {
     const res = await axios.get(`http://localhost:8080/video/result/${videoId}`)
-    result.value = res.data.data || {}
+    const data = res.data.data || {}
+
+    console.log('=== 后端返回的完整数据 ===')
+    console.log(data)
+    console.log('videoFileName:', data.videoFileName)
+    console.log('videoName:', data.videoName)
+    console.log('videoSavePath:', data.videoSavePath)
+    console.log('=========================')
+
+    result.value = data
+
+    // 如果有视频文件名，构建视频URL - 后端会自动处理转码
+    if (data.videoFileName) {
+      videoUrl.value = `http://localhost:8080/video/play/${data.videoFileName}`
+      console.log('视频URL构建成功:', videoUrl.value)
+
+      // 延迟一下再加载视频，确保 DOM 已渲染
+      setTimeout(() => {
+        if (videoPlayerRef.value) {
+          videoLoading.value = true
+          videoPlayerRef.value.load()
+        }
+      }, 100)
+    } else {
+      console.error('未找到视频文件名')
+      console.error('完整数据:', data)
+      videoError.value = true
+      videoErrorMessage.value = '视频文件信息缺失'
+    }
   } catch (error) {
+    console.error('加载结果失败:', error)
     ElMessage.error('加载结果失败')
   } finally {
     loading.value = false
+  }
+}
+
+const handleVideoError = (event) => {
+  console.error('视频加载错误:', event)
+  console.error('视频URL:', videoUrl.value)
+
+  videoLoading.value = false
+  videoError.value = true
+  videoLoaded.value = false
+
+  // 根据错误类型显示不同的消息
+  const video = event.target
+  if (video.error) {
+    switch (video.error.code) {
+      case 1:
+        videoErrorMessage.value = '视频加载被中止'
+        break
+      case 2:
+        videoErrorMessage.value = '网络错误，请检查网络连接'
+        break
+      case 3:
+        videoErrorMessage.value = '视频解码失败'
+        break
+      case 4:
+        videoErrorMessage.value = '视频文件不存在或路径错误'
+        break
+      default:
+        videoErrorMessage.value = '视频加载失败'
+    }
+  } else {
+    videoErrorMessage.value = '视频加载失败'
+  }
+
+  ElMessage.error('视频加载失败：' + videoErrorMessage.value)
+}
+
+const handleVideoLoaded = () => {
+  console.log('视频数据加载成功')
+  videoLoading.value = false
+}
+
+const handleVideoCanPlay = () => {
+  console.log('视频可以播放')
+  videoLoading.value = false
+  videoLoaded.value = true
+  videoError.value = false
+}
+
+const retryLoadVideo = () => {
+  console.log('重试加载视频')
+  videoError.value = false
+  videoLoading.value = true
+
+  if (videoPlayerRef.value) {
+    videoPlayerRef.value.load()
   }
 }
 
@@ -341,6 +496,80 @@ const uploadNew = () => {
   padding: 10px 0;
 }
 
+.video-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  font-size: 16px;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: #000;
+  min-height: 300px;
+}
+
+.video-player {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 500px;
+}
+
+.video-loading,
+.video-error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.video-loading p,
+.video-error p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.video-error .el-icon {
+  color: #f56c6c;
+}
+
+.video-info {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.video-info .el-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.no-video-tip {
+  padding: 40px 0;
+}
+
 .conclusion-section {
   margin-bottom: 20px;
 }
@@ -368,16 +597,6 @@ const uploadNew = () => {
 
 .progress-section {
   margin: 30px 0;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #1f2937;
-  font-size: 16px;
-  margin: 0 0 16px 0;
-  font-weight: 600;
 }
 
 .detail-section {

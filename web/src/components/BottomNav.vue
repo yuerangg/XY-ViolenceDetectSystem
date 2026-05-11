@@ -17,10 +17,9 @@
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue'
+<script setup>import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { HomeFilled, DocumentChecked, User } from '@element-plus/icons-vue'
+import { HomeFilled, DocumentChecked, User, VideoCamera } from '@element-plus/icons-vue'
 
 const route = useRoute()
 
@@ -29,6 +28,11 @@ const navItems = [
     label: '首页',
     path: '/upload',
     icon: HomeFilled
+  },
+  {
+    label: '实时监测',
+    path: '/monitor',
+    icon: VideoCamera
   },
   {
     label: '审核记录',
@@ -48,6 +52,9 @@ const getNavPath = (path) => {
 
   if (path === '/upload') {
     return `/upload?userId=${userId}`
+  }
+  if (path === '/monitor') {
+    return `/monitor/${userId}`
   }
   if (path === '/list') {
     return `/list/${userId}`

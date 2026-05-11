@@ -8,28 +8,26 @@ spring:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  redis:
-    host: localhost
-    port: 6379
-    password: 123456
-    database: 0
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-
   servlet:
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB
+  data:
+    redis:
+      host: localhost
+      password: 123456
+      database: 0
+      port: 6379
 
 file:
   upload:
     video-path: D:/video_upload/
     frame-path: D:/video_frame/
+
 yolo:
-  model-path: E:/model/best.onnx
+  model-path: C:\Users\xiaoy\runs\classify\train-4\weights\best.torchscript
+
+
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml

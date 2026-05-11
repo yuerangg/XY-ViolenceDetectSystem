@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 public class YoloDetectUtil {
 
-    @Value("${yolo.model-path}")
+    @Value("E:\\model\\best.onnx")
     private String modelPath;
 
     private ZooModel<Image, Classifications> model;

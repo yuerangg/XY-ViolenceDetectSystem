@@ -5,6 +5,7 @@ import Upload from '../views/Upload.vue'
 import Result from '../views/Result.vue'
 import List from '../views/List.vue'
 import Profile from '../views/Profile.vue'
+import Monitor from '../views/Monitor.vue'
 
 const routes = [
     { path: '/', redirect: '/login' },
@@ -13,7 +14,8 @@ const routes = [
     { path: '/upload', component: Upload },
     { path: '/result/:videoId', component: Result },
     { path: '/list/:userId', component: List },
-    { path: '/profile/:userId', component: Profile }
+    { path: '/profile/:userId', component: Profile },
+    { path: '/monitor/:userId', component: Monitor }
 ]
 
 const router = createRouter({
