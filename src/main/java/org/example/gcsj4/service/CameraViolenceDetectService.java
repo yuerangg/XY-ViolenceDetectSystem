@@ -83,9 +83,9 @@ public class CameraViolenceDetectService {
 
         try {
             model = criteria.loadModel();
-            System.out.println("✅ 模型加载成功");
+            System.out.println("模型加载成功");
         } catch (Exception e) {
-            System.err.println("❌ 模型加载失败: " + e.getMessage());
+            System.err.println("模型加载失败: " + e.getMessage());
             System.err.println("请检查:");
             System.err.println("   1. 模型文件是否存在于指定路径");
             System.err.println("   2. 模型格式是否正确");
@@ -97,7 +97,7 @@ public class CameraViolenceDetectService {
 
         executorService = Executors.newSingleThreadExecutor();
 
-        System.out.println("✅ 摄像头初始化成功，模型加载完成");
+        System.out.println("摄像头初始化成功，模型加载完成");
         System.out.println("类别顺序: " + classNames);
         System.out.println("使用引擎: PyTorch (TorchScript)");
 
@@ -305,7 +305,7 @@ public class CameraViolenceDetectService {
                             }
                         }
 
-                        boolean isViolence = "violence".equalsIgnoreCase(label) && confidence > 0.5;
+                        boolean isViolence = "violence".equalsIgnoreCase(label) && confidence > 0.7;
 
                         if (isViolence) {
                             System.out.println(String.format("【暴力警告】标签: %s, 置信度: %.2f%%, 耗时: %dms",
